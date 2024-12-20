@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control LED</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            margin-top: 100px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Control ESP32 LED</h1>
+        <button id="onButton">Turn ON</button>
+        <button id="offButton">Turn OFF</button>
+        <p id="status"></p>
+    </div>
+    <script>
+        const onButton = document.getElementById('onButton');
+        const offButton = document.getElementById('offButton');
+        const status = document.getElementById('status');
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Please log in first!');
+            window.location.href = 'login.html';
+        }
+
+        const backendURL = 'https://espreall.onrender.com';
+
+        onButton.onclick = async () => {
+            await controlLED('ON');
+        };
+
+        offButton.onclick = async () => {
+            await controlLED('OFF');
+        };
+
+        async function controlLED(state) {
+            try {
+                const response = await fetch(`${backendURL}/led`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`, // Send token
+                    },
+                    body: JSON.stringify({ state }),
+                });
+
+                const result = await response.json();
+                if (response.status === 200) {
+                    status.textContent = `LED is ${state}`;
+                } else {
+                    alert(result.error || 'Failed to control LED');
+                }
+            } catch (error) {
+                alert('Error communicating with the server!');
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
